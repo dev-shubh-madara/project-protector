@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="cb-token" content="__CB_TOKEN__">
+<title>CipherBloom Guardian</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#06040d; --glass:rgba(255,255,255,.055); --glass-2:rgba(255,255,255,.085); --stroke:rgba(255,255,255,.12);
+  --stroke-2:rgba(255,255,255,.2); --txt:#f2eeff; --dim:#a69cc8; --mute:#6f6696;
+  --pink:#ff4fd8; --vio:#8b5cff; --cyan:#36e2ff; --ok:#5dffa8;
+  --critical:#ff3b6b; --high:#ff8a3d; --medium:#ffd23f; --low:#36e2ff; --info:#9a9fbd;
+  --r:20px; --shadow:0 20px 60px -20px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.08);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--txt);font:15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:#ff4fd855}
+
+/* ---------- animated backdrop ---------- */
+.bg{position:fixed;inset:0;z-index:-3;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;mix-blend-mode:screen;animation:float 22s ease-in-out infinite alternate}
+.b1{width:46vmax;height:46vmax;left:-12vmax;top:-14vmax;background:radial-gradient(circle,#7c4dff,transparent 65%)}
+.b2{width:40vmax;height:40vmax;right:-10vmax;top:6vmax;background:radial-gradient(circle,#ff3fd0,transparent 65%);animation-duration:27s;animation-delay:-6s}
+.b3{width:42vmax;height:42vmax;left:22vmax;bottom:-22vmax;background:radial-gradient(circle,#17c8ff,transparent 65%);animation-duration:31s;animation-delay:-12s}
+@keyframes float{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(6vmax,4vmax,0) scale(1.12)}100%{transform:translate3d(-4vmax,7vmax,0) scale(.95)}}
+.grid{position:fixed;inset:0;z-index:-2;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse at 50% 30%,#000 30%,transparent 75%)}
+#stars{position:fixed;inset:0;z-index:-1;pointer-events:none}
+
+/* ---------- glass ---------- */
+.glass{background:linear-gradient(160deg,var(--glass-2),var(--glass));border:1px solid var(--stroke);border-radius:var(--r);
+  backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);box-shadow:var(--shadow);position:relative}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,79,216,.45),transparent 35%,transparent 65%,rgba(54,226,255,.45));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.55}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:14px;z-index:20;margin:14px auto 0;max-width:1200px;width:calc(100% - 32px);display:flex;align-items:center;gap:14px;padding:10px 14px 10px 16px;border-radius:18px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.3px;font-size:17px}
+.brand img{width:30px;height:30px;filter:drop-shadow(0 0 10px #ff4fd877)}
+.brand span{background:linear-gradient(90deg,#fff,#d9c9ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pill{font-size:11.5px;font-weight:700;letter-spacing:.4px;padding:5px 10px;border-radius:999px;border:1px solid var(--stroke);background:rgba(255,255,255,.04);color:var(--dim);white-space:nowrap}
+.top .grow{flex:1}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--dim)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 #5dffa888;animation:ping 2s infinite}
+.dot.off{background:var(--critical);animation:none}
+@keyframes ping{70%{box-shadow:0 0 0 10px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@media(max-width:820px){.badges{display:none}}
+
+/* ---------- layout ---------- */
+main{max-width:1200px;margin:0 auto;padding:34px 16px 80px}
+.hero{text-align:center;margin:18px 0 34px}
+.hero h1{margin:0;font-size:clamp(34px,5.6vw,64px);line-height:1.02;letter-spacing:-2px;font-weight:850}
+.hero h1 .g{background:linear-gradient(90deg,var(--pink),var(--vio),var(--cyan),var(--pink));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 8s linear infinite}
+@keyframes shine{to{background-position:300% 0}}
+.hero p{color:var(--dim);max-width:640px;margin:14px auto 0;font-size:16.5px}
+.cols{display:grid;grid-template-columns:1.25fr 1fr;gap:20px}
+@media(max-width:940px){.cols{grid-template-columns:1fr}}
+.card{padding:22px}
+.card h2{margin:0 0 4px;font-size:17px;letter-spacing:-.2px;display:flex;align-items:center;gap:10px}
+.card h2 .ic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#ff4fd833,#36e2ff22);border:1px solid var(--stroke)}
+.card .sub{color:var(--mute);font-size:13px;margin:0 0 18px}
+.reveal{opacity:0;transform:translateY(18px);animation:in .8s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes in{to{opacity:1;transform:none}}
+
+/* ---------- tabs / inputs ---------- */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--stroke);position:relative;margin-bottom:16px}
+.tabs button{all:unset;cursor:pointer;text-align:center;padding:9px 6px;border-radius:10px;font-weight:650;font-size:13.5px;color:var(--dim);position:relative;z-index:1;transition:color .25s}
+.tabs button.on{color:#fff}
+.tabs .slider{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 16px)/3);border-radius:10px;background:linear-gradient(135deg,#8b5cff,#ff4fd8);box-shadow:0 6px 20px -6px #ff4fd8aa;transition:transform .4s cubic-bezier(.2,.9,.2,1)}
+label.lbl{display:block;font-size:12.5px;color:var(--dim);font-weight:600;margin:0 0 7px}
+.field{width:100%;padding:13px 14px;border-radius:13px;border:1px solid var(--stroke);background:rgba(0,0,0,.28);color:var(--txt);font:14px var(--mono);outline:none;transition:border-color .2s,box-shadow .2s}
+.field:focus{border-color:#ff4fd8aa;box-shadow:0 0 0 4px #ff4fd822}
+.field::placeholder{color:var(--mute)}
+.hint{font-size:12px;color:var(--mute);margin-top:7px}
+.pane{display:none}.pane.on{display:block;animation:in .45s both}
+.drop{border:1.5px dashed var(--stroke-2);border-radius:16px;padding:26px 16px;text-align:center;cursor:pointer;transition:.25s;background:rgba(0,0,0,.18)}
+.drop:hover,.drop.over{border-color:var(--pink);background:#ff4fd810;transform:scale(1.01)}
+.drop b{display:block;font-size:15px;margin-bottom:4px}
+.drop small{color:var(--mute)}
+.drop .file{margin-top:10px;font:13px var(--mono);color:var(--cyan)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chk{position:relative}
+.chk input{position:absolute;opacity:0;pointer-events:none}
+.chk span{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;border:1px solid var(--stroke);background:rgba(255,255,255,.03);font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;transition:.2s;user-select:none}
+.chk span::before{content:"";width:14px;height:14px;border-radius:5px;border:1.5px solid var(--stroke-2);transition:.2s}
+.chk input:checked+span{color:#fff;border-color:#8b5cff99;background:#8b5cff22}
+.chk input:checked+span::before{background:linear-gradient(135deg,var(--vio),var(--pink));border-color:transparent;box-shadow:0 0 10px #ff4fd877}
+.chk input:focus-visible+span{outline:2px solid var(--cyan);outline-offset:2px}
+.row{margin-top:18px}
+
+/* ---------- switch ---------- */
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--stroke);background:rgba(0,0,0,.2);cursor:pointer}
+.switch b{font-size:14px}.switch small{display:block;color:var(--mute);font-size:12px;font-weight:500}
+.sw{position:relative;width:46px;height:26px;flex:none}
+.sw input{opacity:0;width:0;height:0}
+.sw i{position:absolute;inset:0;border-radius:99px;background:#ffffff1f;transition:.3s}
+.sw i::after{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.35s cubic-bezier(.3,1.4,.5,1)}
+.sw input:checked+i{background:linear-gradient(90deg,var(--vio),var(--pink))}
+.sw input:checked+i::after{transform:translateX(20px)}
+.sw input:focus-visible+i{outline:2px solid var(--cyan);outline-offset:2px}
+.live-body{max-height:0;overflow:hidden;opacity:0;transition:max-height .5s ease,opacity .4s ease,margin .4s}
+.live-body.on{max-height:520px;opacity:1;margin-top:14px}
+.consent{font-size:12.8px;color:var(--dim);background:rgba(0,0,0,.25);border:1px solid var(--stroke);border-radius:14px;padding:12px 14px;margin:12px 0}
+.consent ul{margin:6px 0 0;padding-left:18px}.consent li{margin:2px 0}
+.consent .no{color:#ffb1c4}
+.phrase-ok{border-color:#5dffa8aa!important;box-shadow:0 0 0 4px #5dffa81f!important}
+
+/* ---------- button ---------- */
+.go{position:relative;overflow:hidden;width:100%;margin-top:20px;padding:15px 18px;border:0;border-radius:15px;cursor:pointer;color:#fff;font-weight:800;font-size:15.5px;letter-spacing:.2px;
+  background:linear-gradient(110deg,#7c4dff,#ff4fd8 55%,#ff8a3d);box-shadow:0 14px 40px -12px #ff4fd8b0;transition:transform .2s,box-shadow .2s,filter .2s}
+.go:hover{transform:translateY(-2px);box-shadow:0 18px 50px -12px #ff4fd8d0}
+.go:active{transform:translateY(0) scale(.99)}
+.go::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-100%);animation:sheen 3.2s ease-in-out infinite}
+@keyframes sheen{60%,100%{transform:translateX(100%)}}
+.go[disabled]{filter:grayscale(.5) brightness(.8);cursor:wait}
+.kbd{font:11px var(--mono);padding:2px 6px;border-radius:6px;border:1px solid #ffffff44;margin-left:8px;opacity:.75}
+.err{display:none;margin-top:14px;padding:12px 14px;border-radius:13px;border:1px solid #ff3b6b66;background:#ff3b6b14;color:#ffc2d1;font-size:13.5px}
+.err.on{display:block;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* ---------- side info ---------- */
+.feat{display:grid;gap:10px}
+.feat div{display:flex;gap:12px;padding:12px;border-radius:14px;border:1px solid var(--stroke);background:rgba(255,255,255,.025);transition:.25s}
+.feat div:hover{transform:translateX(4px);border-color:var(--stroke-2)}
+.feat i{font-style:normal;width:34px;height:34px;flex:none;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#8b5cff33,#ff4fd822)}
+.feat b{display:block;font-size:14px}.feat small{color:var(--mute);font-size:12.5px}
+
+/* ---------- scanning overlay ---------- */
+.scan{display:none;margin-top:22px;padding:28px 22px;text-align:center}
+.scan.on{display:block;animation:in .4s both}
+.radar{width:150px;height:150px;margin:0 auto 18px;border-radius:50%;position:relative;border:1px solid #ffffff22;
+  background:radial-gradient(circle,transparent 30%,#ffffff08 31%,transparent 32%,transparent 60%,#ffffff08 61%,transparent 62%)}
+.radar::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#ff4fd8aa,transparent 30%);animation:spin 1.6s linear infinite}
+.radar::after{content:"";position:absolute;inset:44%;border-radius:50%;background:var(--pink);box-shadow:0 0 22px var(--pink)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.steps{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:6px}
+.steps span{font-size:12.5px;padding:6px 11px;border-radius:999px;border:1px solid var(--stroke);color:var(--mute);transition:.3s}
+.steps span.on{color:#fff;border-color:#ff4fd899;background:#ff4fd81c}
+.steps span.done{color:var(--ok);border-color:#5dffa855}
+
+/* ---------- results ---------- */
+#results{display:none;margin-top:26px;scroll-margin-top:96px}
+.scan{scroll-margin-top:96px}
+#results.on{display:block}
+.summary{display:grid;grid-template-columns:260px 1fr;gap:20px}
+@media(max-width:860px){.summary{grid-template-columns:1fr}}
+.score{padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring{position:relative;width:180px;height:180px}
+.ring svg{transform:rotate(-90deg)}
+.ring .trk{stroke:#ffffff14}
+.ring .val{stroke:url(#rg);stroke-linecap:round;stroke-dasharray:502;stroke-dashoffset:502;transition:stroke-dashoffset 1.6s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 10px #ff4fd8aa)}
+.ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:50px;font-weight:850;letter-spacing:-2px}
+.ring .cap{position:absolute;left:0;right:0;bottom:40px;text-align:center;font-size:10.5px;letter-spacing:2.5px;color:var(--mute);font-weight:700}
+.grade{margin-top:12px;font-weight:750;font-size:14px}
+.score small{color:var(--mute);font-size:11.5px;text-align:center;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}}
+.stat{padding:16px 14px;border-radius:16px;cursor:pointer;transition:.25s;border:1px solid var(--stroke);background:rgba(255,255,255,.035);position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--c);opacity:.85}
+.stat:hover{transform:translateY(-3px);border-color:var(--c)}
+.stat.on{border-color:var(--c);box-shadow:0 0 0 1px var(--c),0 10px 30px -12px var(--c)}
+.stat b{display:block;font-size:30px;font-weight:850;letter-spacing:-1px;color:var(--c)}
+.stat span{font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);font-weight:700}
+.meta{margin-top:14px;padding:14px 16px;border-radius:16px;display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12.8px;color:var(--dim)}
+.meta code{font-family:var(--mono);color:var(--txt);word-break:break-all}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 14px}
+.search{flex:1;min-width:200px;position:relative}
+.search .field{padding-left:38px;font-family:inherit}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.5}
+.btn{all:unset;cursor:pointer;padding:11px 15px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,.05);font-weight:650;font-size:13px;transition:.2s;display:inline-flex;gap:7px;align-items:center}
+.btn:hover{background:rgba(255,255,255,.1);border-color:var(--stroke-2);transform:translateY(-1px)}
+.btn:focus-visible{outline:2px solid var(--cyan)}
+.list{display:grid;gap:12px}
+.item{border-radius:16px;border:1px solid var(--stroke);background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.025));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  overflow:hidden;opacity:0;transform:translateY(14px);animation:in .55s cubic-bezier(.2,.8,.2,1) forwards;transition:border-color .25s,box-shadow .25s}
+.item:hover{border-color:var(--c);box-shadow:0 14px 40px -18px var(--c)}
+.item .hd{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;position:relative}
+.item .hd::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);box-shadow:0 0 14px var(--c)}
+.sev{font-size:10.5px;font-weight:850;letter-spacing:1.4px;padding:4px 9px;border-radius:999px;color:#14001f;background:var(--c);flex:none}
+.cat{font-size:11px;color:var(--mute);border:1px solid var(--stroke);padding:3px 8px;border-radius:999px;flex:none}
+.item .t{flex:1;font-weight:650;min-width:0}
+.loc{font:12.5px var(--mono);color:var(--cyan);background:rgba(0,0,0,.3);padding:4px 9px;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42%}
+.chev{transition:transform .3s;opacity:.6;flex:none}
+.item.open .chev{transform:rotate(180deg)}
+.item .bd{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}
+.item.open .bd{grid-template-rows:1fr}
+.item .bd>div{overflow:hidden}
+.item .in{padding:0 18px 16px 20px;border-top:1px solid var(--stroke)}
+.item .in p{margin:12px 0 0;color:#ddd5f6;font-size:14px}
+.item .in p b{color:var(--pink);font-weight:700;margin-right:6px}
+.item code{font:12.5px var(--mono);background:rgba(0,0,0,.35);padding:3px 7px;border-radius:7px;color:#ffd6f4}
+.item .act{margin-top:12px;display:flex;gap:8px}
+@media(max-width:640px){.cat{display:none}.loc{max-width:100%}.item .hd{flex-wrap:wrap}}
+.empty{text-align:center;padding:50px 20px;border-radius:20px}
+.empty h3{margin:10px 0 6px;font-size:26px;color:var(--ok)}
+.empty p{color:var(--dim);margin:0}
+.shield{width:74px;height:74px;margin:0 auto;animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+footer{text-align:center;color:var(--mute);font-size:12.5px;margin-top:50px}
+footer a{color:var(--dim)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,30px);opacity:0;padding:11px 18px;border-radius:13px;font-size:13.5px;font-weight:650;transition:.35s;z-index:50;pointer-events:none}
+.toast.on{transform:translate(-50%,0);opacity:1}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div class="grid"></div>
+<canvas id="stars"></canvas>
+
+<header class="top glass">
+  <div class="brand"><img src="/favicon.svg" alt=""><span>CipherBloom Guardian</span></div>
+  <span class="pill">v__CB_VERSION__</span>
+  <div class="grow"></div>
+  <div class="badges"><span class="pill">No AI</span><span class="pill">No API key</span><span class="pill">100% offline</span></div>
+  <div class="status"><span class="dot" id="dot"></span><span id="stat">Local engine ready</span></div>
+</header>
+
+<main>
+  <section class="hero reveal">
+    <h1>Protect your project<br><span class="g">before anyone else finds it.</span></h1>
+    <p>Finds leaked API keys, unsafe code, broken syntax and exposed files, then shows you the exact file, line and fix. It runs entirely on this computer.</p>
+  </section>
+
+  <section class="cols">
+    <div class="glass card reveal" style="animation-delay:.08s">
+      <h2><span class="ic">&#9881;</span>Scan a project</h2>
+      <p class="sub">Choose where your code is. It is only read, never run.</p>
+
+      <div class="tabs" id="tabs" role="tablist">
+        <div class="slider" id="slider"></div>
+        <button class="on" data-tab="folder" role="tab" aria-selected="true">Folder path</button>
+        <button data-tab="zip" role="tab" aria-selected="false">Upload .zip</button>
+        <button data-tab="repo" role="tab" aria-selected="false">Public repo</button>
+      </div>
+
+      <div class="pane on" data-pane="folder">
+        <label class="lbl" for="folder">Project folder on this computer</label>
+        <input class="field" id="folder" placeholder="C:\Users\you\my-bot   or   ~/projects/my-api" autocomplete="off" spellcheck="false">
+        <div class="hint">Tip: copy the folder path from your file explorer's address bar.</div>
+      </div>
+      <div class="pane" data-pane="zip">
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose a zip file">
+          <b>Drop your project .zip here</b><small>or click to choose. Up to 100 MB. Extracted to a temp folder and deleted after the scan.</small>
+          <div class="file" id="fname"></div>
+        </div>
+        <input type="file" id="zip" accept=".zip,application/zip" hidden>
+      </div>
+      <div class="pane" data-pane="repo">
+        <label class="lbl" for="repo">Public repository link</label>
+        <input class="field" id="repo" placeholder="https://github.com/owner/repo" autocomplete="off" spellcheck="false">
+        <div class="hint">GitHub, GitLab or Bitbucket over https. Needs git installed. Includes a git history check.</div>
+      </div>
+
+      <div class="row">
+        <label class="lbl">Checks</label>
+        <div class="chips" id="checks">
+          <label class="chk"><input type="checkbox" value="secrets" checked><span>Secrets &amp; keys</span></label>
+          <label class="chk"><input type="checkbox" value="git" checked><span>.env &amp; git</span></label>
+          <label class="chk"><input type="checkbox" value="syntax" checked><span>Syntax errors</span></label>
+          <label class="chk"><input type="checkbox" value="risky" checked><span>Risky code</span></label>
+          <label class="chk"><input type="checkbox" value="deps" checked><span>Dependencies</span></label>
+          <label class="chk"><input type="checkbox" id="history" checked><span>Git history</span></label>
+        </div>
+      </div>
+
+      <div class="row">
+        <label class="switch" for="liveOn">
+          <span><b>Live check on localhost</b><small>Test your running app for exposed files, CORS, headers and debug pages.</small></span>
+          <span class="sw"><input type="checkbox" id="liveOn"><i></i></span>
+        </label>
+        <div class="live-body" id="liveBody">
+          <label class="lbl" for="liveUrl">Your app's local address</label>
+          <input class="field" id="liveUrl" value="http://127.0.0.1:8000" autocomplete="off" spellcheck="false">
+          <div class="consent">
+            <b>What the live check does</b>
+            <ul>
+              <li>About 25 ordinary read-only GET requests to the address above</li>
+              <li>Looks for downloadable .env / .git / backups, CORS, security headers, debug pages, cookie flags</li>
+              <li class="no">Never sends attack payloads, floods, guesses passwords or changes data</li>
+              <li class="no">Refuses any address that is not localhost / 127.0.0.1</li>
+            </ul>
+          </div>
+          <label class="lbl" for="phrase">Type <code style="font-family:var(--mono)">I OWN THIS</code> to confirm this is your app</label>
+          <input class="field" id="phrase" placeholder="I OWN THIS" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+
+      <button class="go" id="go">Start protection scan<span class="kbd">Ctrl + Enter</span></button>
+      <div class="err" id="err" role="alert"></div>
+    </div>
+
+    <div class="glass card reveal" style="animation-delay:.16s">
+      <h2><span class="ic">&#10022;</span>What it protects you from</h2>
+      <p class="sub">Every check is a plain rule, so it works without AI or internet.</p>
+      <div class="feat">
+        <div><i>&#128273;</i><span><b>Leaked keys and tokens</b><small>AWS, GitHub, Telegram, Stripe, Discord, Google, AI-provider keys, private keys and DB passwords. Values are always masked.</small></span></div>
+        <div><i>&#128193;</i><span><b>.env mistakes</b><small>.env not git-ignored, already committed, or still in your git history.</small></span></div>
+        <div><i>&#9888;</i><span><b>Dangerous code</b><small>eval/exec, shell=True, SQL injection, pickle, debug mode, open CORS, innerHTML.</small></span></div>
+        <div><i>&#129520;</i><span><b>Broken syntax</b><small>Python, JSON and JavaScript, with the exact line to fix.</small></span></div>
+        <div><i>&#128230;</i><span><b>Risky dependencies</b><small>Unpinned or wildcard versions and missing lock files.</small></span></div>
+        <div><i>&#127760;</i><span><b>Live exposure</b><small>Files anyone can download from your running app, with permission only.</small></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="glass scan" id="scan">
+    <div class="radar"></div>
+    <div style="font-weight:750;font-size:17px" id="scanTitle">Scanning your project...</div>
+    <div style="color:var(--mute);font-size:13px;margin-top:4px">Reading files locally. Nothing is uploaded anywhere.</div>
+    <div class="steps" id="steps"></div>
+  </section>
+
+  <section id="results" aria-live="polite">
+    <div class="summary">
+      <div class="glass score">
+        <div class="ring">
+          <svg width="180" height="180" viewBox="0 0 180 180"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#ff4fd8"/><stop offset="1" stop-color="#36e2ff"/></linearGradient></defs>
+            <circle class="trk" cx="90" cy="90" r="80" fill="none" stroke-width="13"/><circle class="val" id="ringVal" cx="90" cy="90" r="80" fill="none" stroke-width="13"/></svg>
+          <div class="num" id="scoreNum">0</div><div class="cap">HEALTH</div>
+        </div>
+        <div class="grade" id="grade"></div>
+        <small>A heuristic score, not a guarantee of safety.</small>
+      </div>
+      <div>
+        <div class="stats" id="stats"></div>
+        <div class="glass meta" id="meta"></div>
+      </div>
+    </div>
+    <div class="tools">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input class="field" id="q" placeholder="Filter by file, rule or text..." autocomplete="off">
+      </div>
+      <button class="btn" id="expand">Expand all</button>
+      <button class="btn" id="dlJson">&#8681; JSON</button>
+      <button class="btn" id="dlHtml">&#8681; HTML report</button>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <footer>CipherBloom Guardian &middot; MIT licensed &middot; made by Shubh Kumar Mishra (Madara) &middot; runs only on <code>127.0.0.1</code></footer>
+</main>
+<div class="toast glass" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+  var TOKEN = document.querySelector('meta[name="cb-token"]').content;
+  var SEV = ["critical", "high", "medium", "low", "info"];
+  var LABEL = {secrets: "Secrets", git: ".env & git", syntax: "Syntax", risky: "Risky code", deps: "Dependencies", live: "Live check"};
+  var $ = function (id) { return document.getElementById(id); };
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var tab = "folder", zipFile = null, last = null, active = null;
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+  function toast(msg) { var t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("on"); }, 2200); }
+  function showErr(msg) { var e = $("err"); e.textContent = msg; e.classList.remove("on"); void e.offsetWidth; e.classList.add("on"); }
+  function clearErr() { $("err").classList.remove("on"); }
+
+  /* ---- starfield ---- */
+  (function () {
+    var c = $("stars"), x = c.getContext("2d"), pts = [], W, H, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    function size() { W = c.width = innerWidth * dpr; H = c.height = innerHeight * dpr; c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px"; }
+    size(); addEventListener("resize", size);
+    for (var i = 0; i < 70; i++) pts.push({x: Math.random(), y: Math.random(), r: Math.random() * 1.4 + .3, s: Math.random() * .00025 + .00005, p: Math.random() * 6});
+    function draw(t) {
+      x.clearRect(0, 0, W, H);
+      for (var i = 0; i < pts.length; i++) {
+        var p = pts[i]; if (!reduce) { p.y -= p.s; if (p.y < -0.02) p.y = 1.02; }
+        x.globalAlpha = .25 + .35 * Math.abs(Math.sin(t / 1500 + p.p));
+        x.fillStyle = i % 3 ? "#d9ccff" : "#ff9ae9";
+        x.beginPath(); x.arc(p.x * W, p.y * H, p.r * dpr, 0, 6.283); x.fill();
+      }
+      if (!reduce) requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  })();
+
+  /* ---- engine status ---- */
+  function ping() {
+    fetch("/api/health", {cache: "no-store"}).then(function (r) { return r.json(); }).then(function () {
+      $("dot").classList.remove("off"); $("stat").textContent = "Local engine ready";
+    }).catch(function () { $("dot").classList.add("off"); $("stat").textContent = "Engine stopped"; });
+  }
+  ping(); setInterval(ping, 15000);
+
+  /* ---- tabs ---- */
+  var tabs = [].slice.call(document.querySelectorAll("#tabs button"));
+  tabs.forEach(function (b, i) {
+    b.addEventListener("click", function () {
+      tab = b.dataset.tab;
+      tabs.forEach(function (o) { o.classList.toggle("on", o === b); o.setAttribute("aria-selected", o === b); });
+      $("slider").style.transform = "translateX(calc(" + i * 100 + "% + " + i * 4 + "px))";
+      [].forEach.call(document.querySelectorAll(".pane"), function (p) { p.classList.toggle("on", p.dataset.pane === tab); });
+      clearErr();
+    });
+  });
+
+  /* ---- zip drop ---- */
+  var drop = $("drop"), zin = $("zip");
+  function pick(f) {
+    if (!f) return;
+    if (!/\.zip$/i.test(f.name)) { showErr("Please choose a .zip file."); return; }
+    if (f.size > 100 * 1024 * 1024) { showErr("That zip is larger than 100 MB."); return; }
+    zipFile = f; $("fname").textContent = f.name + "  (" + (f.size / 1048576).toFixed(1) + " MB)"; clearErr();
+  }
+  drop.addEventListener("click", function () { zin.click(); });
+  drop.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); zin.click(); } });
+  zin.addEventListener("change", function () { pick(zin.files[0]); });
+  ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { pick(e.dataTransfer.files[0]); });
+
+  /* ---- live toggle ---- */
+  $("liveOn").addEventListener("change", function () { $("liveBody").classList.toggle("on", this.checked); });
+  $("phrase").addEventListener("input", function () { this.classList.toggle("phrase-ok", this.value.trim() === "I OWN THIS"); });
+
+  /* ---- remember inputs (per-browser convenience only) ---- */
+  var saved = store("cb-folder"); if (saved) $("folder").value = saved;
+  var savedRepo = store("cb-repo"); if (savedRepo) $("repo").value = savedRepo;
+  var savedLive = store("cb-live"); if (savedLive) $("liveUrl").value = savedLive;
+
+  /* ---- scan ---- */
+  function options() {
+    var checks = [].slice.call(document.querySelectorAll("#checks input[value]:checked")).map(function (i) { return i.value; });
+    return {checks: checks, history: $("history").checked};
+  }
+  function live() {
+    if (!$("liveOn").checked) return null;
+    return {url: $("liveUrl").value.trim(), phrase: $("phrase").value.trim()};
+  }
+  var stepTimer = null;
+  function startSteps(keys) {
+    var box = $("steps"); box.textContent = "";
+    var spans = keys.map(function (k) { var s = el("span", null, LABEL[k] || k); box.appendChild(s); return s; });
+    var i = 0;
+    function step() { spans.forEach(function (s, j) { s.className = j < i ? "done" : (j === i ? "on" : ""); }); i = (i + 1) % (spans.length + 1); }
+    step(); stepTimer = setInterval(step, 650);
+  }
+  function stopSteps() { clearInterval(stepTimer); }
+
+  function scan() {
+    clearErr();
+    var opts = options(), lv = live(), req;
+    if (!opts.checks.length && !lv) { showErr("Pick at least one check."); return; }
+    if (lv && lv.phrase !== "I OWN THIS") { showErr("Type I OWN THIS to confirm the live check is on your own app, or switch the live check off."); return; }
+    var headers = {"X-CB-Token": TOKEN};
+    if (tab === "folder") {
+      var f = $("folder").value.trim(); if (!f) { showErr("Paste the path of your project folder."); return; }
+      store("cb-folder", f);
+      headers["Content-Type"] = "application/json";
+      req = fetch("/api/scan", {method: "POST", headers: headers, body: JSON.stringify({source: f, options: opts, live: lv})});
+    } else if (tab === "repo") {
+      var r = $("repo").value.trim(); if (!/^https:\/\//.test(r)) { showErr("Paste a public https repo link, e.g. https://github.com/owner/repo"); return; }
+      store("cb-repo", r);
+      headers["Content-Type"] = "application/json";
+      req = fetch("/api/scan", {method: "POST", headers: headers, body: JSON.stringify({source: r, options: opts, live: lv})});
+    } else {
+      if (!zipFile) { showErr("Choose a .zip file first."); return; }
+      headers["Content-Type"] = "application/zip";
+      var q = "?name=" + encodeURIComponent(zipFile.name) + "&opts=" + encodeURIComponent(JSON.stringify({options: opts, live: lv}));
+      req = fetch("/api/scan-zip" + q, {method: "POST", headers: headers, body: zipFile});
+    }
+    if (lv) store("cb-live", lv.url);
+    var go = $("go"); go.disabled = true; go.firstChild.textContent = "Scanning...";
+    $("results").classList.remove("on"); $("scan").classList.add("on");
+    startSteps(opts.checks.concat(lv ? ["live"] : []));
+    $("scan").scrollIntoView({behavior: reduce ? "auto" : "smooth", block: "center"});
+    req.then(function (res) {
+      return res.json().catch(function () { return {error: "Unexpected response (" + res.status + ")"}; }).then(function (d) {
+        if (!res.ok || d.error) throw new Error(d.error || ("Request failed (" + res.status + ")"));
+        return d;
+      });
+    }).then(function (d) {
+      last = d; active = null; $("q").value = ""; render(d);
+    }).catch(function (e) {
+      showErr(e.message === "Failed to fetch" ? "Lost connection to the local engine. Is `cipherbloom ui` still running?" : e.message);
+    }).then(function () {
+      stopSteps(); $("scan").classList.remove("on"); go.disabled = false; go.firstChild.textContent = "Start protection scan";
+    });
+  }
+  $("go").addEventListener("click", scan);
+  document.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") scan(); });
+
+  /* ---- results ---- */
+  function grade(s) {
+    if (s >= 90) return ["Excellent", "#5dffa8"]; if (s >= 70) return ["Good, a few fixes", "#36e2ff"];
+    if (s >= 40) return ["Needs attention", "#ffd23f"]; return ["At risk - fix now", "#ff3b6b"];
+  }
+  function render(d) {
+    $("results").classList.add("on");
+    var ring = $("ringVal"); ring.style.strokeDashoffset = 502;
+    requestAnimationFrame(function () { requestAnimationFrame(function () { ring.style.strokeDashoffset = 502 - 502 * d.score / 100; }); });
+    var n = $("scoreNum"), t0 = null, dur = reduce ? 1 : 1500;
+    (function tick(ts) { t0 = t0 || ts; var k = Math.min(1, (ts - t0) / dur); n.textContent = Math.round(d.score * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(tick); })(performance.now());
+    var g = grade(d.score); $("grade").textContent = g[0]; $("grade").style.color = g[1];
+
+    var stats = $("stats"); stats.textContent = "";
+    SEV.forEach(function (s) {
+      var c = el("div", "stat"); c.style.setProperty("--c", "var(--" + s + ")"); c.tabIndex = 0; c.setAttribute("role", "button");
+      c.appendChild(el("b", null, d.counts[s] || 0)); c.appendChild(el("span", null, s));
+      function toggle() { active = active === s ? null : s; [].forEach.call(stats.children, function (x) { x.classList.remove("on"); }); if (active) c.classList.add("on"); list(); }
+      c.addEventListener("click", toggle); c.addEventListener("keydown", function (e) { if (e.key === "Enter") toggle(); });
+      stats.appendChild(c);
+    });
+
+    var meta = $("meta"); meta.textContent = "";
+    [["Target", d.target], ["Checks", d.checks.join(", ")], ["Findings", d.findings.length], ["Time", d.seconds + "s"], ["At", d.generated]].forEach(function (p) {
+      var s = el("span"); s.appendChild(document.createTextNode(p[0] + ": ")); s.appendChild(el("code", null, String(p[1]))); meta.appendChild(s);
+    });
+    (d.notes || []).forEach(function (note) { meta.appendChild(el("span", null, "Note: " + note)); });
+    list();
+    setTimeout(function () { $("results").scrollIntoView({behavior: reduce ? "auto" : "smooth", block: "start"}); }, 80);
+  }
+
+  function list() {
+    var box = $("list"); box.textContent = "";
+    if (!last) return;
+    if (!last.findings.length) {
+      var e = el("div", "glass empty");
+      e.appendChild(svgShield()); e.appendChild(el("h3", null, "All clear"));
+      e.appendChild(el("p", null, "No issues found by these checks. Keep your .env ignored and rotate keys regularly."));
+      box.appendChild(e); return;
+    }
+    var q = $("q").value.trim().toLowerCase();
+    var rows = last.findings.filter(function (f) {
+      if (active && f.severity !== active) return false;
+      if (!q) return true;
+      return [f.title, f.file, f.rule, f.why, f.fix, f.category].join(" ").toLowerCase().indexOf(q) >= 0;
+    });
+    if (!rows.length) { box.appendChild(el("div", "glass empty", "Nothing matches this filter.")); return; }
+    rows.forEach(function (f, i) {
+      var it = el("div", "item"); it.style.setProperty("--c", "var(--" + f.severity + ")"); it.style.animationDelay = Math.min(i * 45, 900) + "ms";
+      var hd = el("div", "hd"); hd.tabIndex = 0; hd.setAttribute("role", "button"); hd.setAttribute("aria-expanded", "false");
+      hd.appendChild(el("span", "sev", f.severity.toUpperCase()));
+      hd.appendChild(el("span", "cat", f.category));
+      hd.appendChild(el("span", "t", f.title));
+      if (f.file) { var loc = el("span", "loc", f.file + (f.line ? ":" + f.line : "")); loc.title = loc.textContent; hd.appendChild(loc); }
+      var ch = el("span", "chev", "▾"); hd.appendChild(ch);
+      var bd = el("div", "bd"), wrap = el("div"), inner = el("div", "in");
+      function para(label, text, code) { var p = el("p"); p.appendChild(el("b", null, label)); p.appendChild(code ? el("code", null, text) : document.createTextNode(text)); inner.appendChild(p); }
+      if (f.file) para("Where:", f.file + (f.line ? "  line " + f.line : ""), true);
+      if (f.snippet) para("Found:", f.snippet, true);
+      if (f.why) para("Why it matters:", f.why);
+      if (f.fix) para("How to fix:", f.fix);
+      var act = el("div", "act");
+      if (f.fix) {
+        var cp = el("button", "btn", "Copy fix");
+        cp.addEventListener("click", function (e) {
+          e.stopPropagation();
+          (navigator.clipboard ? navigator.clipboard.writeText(f.fix) : Promise.reject()).then(function () { toast("Fix copied"); }, function () { toast("Copy failed - select the text instead"); });
+        });
+        act.appendChild(cp);
+      }
+      if (f.file) {
+        var cl = el("button", "btn", "Copy location");
+        cl.addEventListener("click", function (e) { e.stopPropagation(); if (navigator.clipboard) navigator.clipboard.writeText(f.file + (f.line ? ":" + f.line : "")).then(function () { toast("Location copied"); }); });
+        act.appendChild(cl);
+      }
+      inner.appendChild(act); wrap.appendChild(inner); bd.appendChild(wrap);
+      function toggle() { var o = it.classList.toggle("open"); hd.setAttribute("aria-expanded", o); }
+      hd.addEventListener("click", toggle); hd.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+      it.appendChild(hd); it.appendChild(bd); box.appendChild(it);
+    });
+  }
+  $("q").addEventListener("input", list);
+  $("expand").addEventListener("click", function () {
+    var items = document.querySelectorAll(".item"), open = this.textContent === "Expand all";
+    [].forEach.call(items, function (i) { i.classList.toggle("open", open); });
+    this.textContent = open ? "Collapse all" : "Expand all";
+  });
+
+  function download(ext) {
+    if (!last) return;
+    fetch("/api/report/" + last.id + "." + ext, {headers: {"X-CB-Token": TOKEN}}).then(function (r) {
+      if (!r.ok) throw new Error("Report expired. Run the scan again."); return r.blob();
+    }).then(function (b) {
+      var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "cipherbloom-report." + ext;
+      document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+      toast("Report downloaded");
+    }).catch(function (e) { showErr(e.message); });
+  }
+  $("dlJson").addEventListener("click", function () { download("json"); });
+  $("dlHtml").addEventListener("click", function () { download("html"); });
+
+  function svgShield() {
+    var ns = "http://www.w3.org/2000/svg", s = document.createElementNS(ns, "svg");
+    s.setAttribute("viewBox", "0 0 64 64"); s.setAttribute("class", "shield");
+    var p = document.createElementNS(ns, "path");
+    p.setAttribute("d", "M32 4 L56 13 V32 C56 47 46 56 32 60 C18 56 8 47 8 32 V13 Z");
+    p.setAttribute("fill", "#0f2a22"); p.setAttribute("stroke", "#5dffa8"); p.setAttribute("stroke-width", "3");
+    var c = document.createElementNS(ns, "path");
+    c.setAttribute("d", "M21 33 l8 8 l15 -17"); c.setAttribute("fill", "none"); c.setAttribute("stroke", "#5dffa8"); c.setAttribute("stroke-width", "4"); c.setAttribute("stroke-linecap", "round");
+    s.appendChild(p); s.appendChild(c); return s;
+  }
+})();
+</script>
+</body>
+</html>

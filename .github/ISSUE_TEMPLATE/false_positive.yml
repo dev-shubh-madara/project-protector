@@ -1,0 +1,15 @@
+name: False positive / missed detection
+description: It flagged something safe, or missed something real
+labels: [detection]
+body:
+  - type: input
+    id: rule
+    attributes:
+      label: Rule id
+      placeholder: "hardcoded-secret"
+  - type: textarea
+    id: sample
+    attributes:
+      label: Example line
+      description: Never paste a real secret. Replace real values with fake ones of the same shape.
+    validations: { required: true }

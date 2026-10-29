@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cipherbloom-guardian"
+version = "0.1.0"
+description = "AI-free, offline security guardian: finds leaked keys, risky code and exposed files, then tells you the file, the line and the fix."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Shubh Kumar Mishra (Madara)" }]
+keywords = ["security", "secrets", "env", "scanner", "devsecops", "cli", "pre-commit"]
+dependencies = []
+
+[project.scripts]
+cipherbloom = "cipherbloom.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["cipherbloom*"]
+
+[tool.setuptools.package-data]
+cipherbloom = ["web/*"]

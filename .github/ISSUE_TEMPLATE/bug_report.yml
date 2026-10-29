@@ -1,0 +1,16 @@
+name: Bug report
+description: Something is broken or crashes
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Include the command you ran and the output (secret values are already masked).
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes:
+      label: Version and OS
+      placeholder: "cipherbloom-guardian 0.1.0, Windows 11, Python 3.12"
+    validations: { required: true }

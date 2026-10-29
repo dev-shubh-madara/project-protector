@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 250" width="100%" role="img" aria-label="How CipherBloom Guardian works: input, static checks, consent, live localhost check, report">
+  <defs>
+    <linearGradient id="gr" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="0"><stop offset="0" stop-color="#ff4fd8"/><stop offset="1" stop-color="#36e2ff"/></linearGradient>
+    <filter id="gl"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <style>
+    .box{fill:#120a22;stroke:url(#gr);stroke-width:2.5}
+    .h{font:700 17px system-ui,Segoe UI,Roboto,sans-serif;fill:#efe9ff;text-anchor:middle}
+    .s{font:13px system-ui,Segoe UI,Roboto,sans-serif;fill:#a99ccf;text-anchor:middle}
+    .wire{stroke:url(#gr);stroke-width:3;stroke-dasharray:8 10;fill:none;animation:flow 1.2s linear infinite}
+    @keyframes flow{to{stroke-dashoffset:-18}}
+    .node{animation:pop 4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+    .n2{animation-delay:.5s}.n3{animation-delay:1s}.n4{animation-delay:1.5s}.n5{animation-delay:2s}
+    @keyframes pop{0%,100%{transform:scale(1)}10%{transform:scale(1.06)}20%{transform:scale(1)}}
+  </style>
+  <rect width="1000" height="250" rx="22" fill="#07040f"/>
+  <path class="wire" d="M170 115 H215"/><path class="wire" d="M385 115 H430"/><path class="wire" d="M600 115 H645"/><path class="wire" d="M815 115 H840"/>
+  <g class="node n1"><rect class="box" x="20" y="70" width="150" height="90" rx="16"/><text class="h" x="95" y="108">Your project</text><text class="s" x="95" y="130">folder, .zip or</text><text class="s" x="95" y="148">public repo link</text></g>
+  <g class="node n2"><rect class="box" x="215" y="70" width="170" height="90" rx="16"/><text class="h" x="300" y="104">Static checks</text><text class="s" x="300" y="126">secrets, git, syntax,</text><text class="s" x="300" y="144">risky code, deps</text></g>
+  <g class="node n3"><rect class="box" x="430" y="70" width="170" height="90" rx="16"/><text class="h" x="515" y="104">Consent gate</text><text class="s" x="515" y="126">you type I OWN THIS</text><text class="s" x="515" y="144">localhost only</text></g>
+  <g class="node n4"><rect class="box" x="645" y="70" width="170" height="90" rx="16"/><text class="h" x="730" y="104">Live check</text><text class="s" x="730" y="126">read-only GET requests</text><text class="s" x="730" y="144">to your own app</text></g>
+  <g class="node n5"><rect class="box" x="840" y="55" width="145" height="120" rx="16" filter="url(#gl)"/><text class="h" x="912" y="100">Report</text><text class="s" x="912" y="124">file + line</text><text class="s" x="912" y="142">why + exact fix</text></g>
+  <text class="s" x="500" y="222" style="font-size:14px">Everything runs on your machine. Your code is read, never executed. No AI. No API key.</text>
+</svg>

@@ -1,0 +1,33 @@
+name: CipherBloom Guardian
+description: AI-free, offline scan for leaked secrets, risky code, syntax errors and unsafe dependencies.
+branding:
+  icon: shield
+  color: purple
+inputs:
+  path:
+    description: Folder to scan
+    default: "."
+  fail-on:
+    description: Fail the job at this severity or above (critical, high, medium, low, info)
+    default: "high"
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install CipherBloom Guardian
+      shell: bash
+      run: pip install "$GITHUB_ACTION_PATH"
+    - name: Scan
+      shell: bash
+      env:
+        CB_PATH: ${{ inputs.path }}
+        CB_FAIL_ON: ${{ inputs.fail-on }}
+      run: cipherbloom scan "$CB_PATH" --fail-on "$CB_FAIL_ON" --no-color --html cipherbloom-report.html
+    - name: Upload report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cipherbloom-report
+        path: cipherbloom-report.html

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470" width="100%" role="img" aria-label="CipherBloom Guardian scanning a project and printing findings with file, line and fix">
+  <style>
+    text{font:15px ui-monospace,Menlo,Consolas,monospace;white-space:pre}
+    .d{fill:#8e82b8}.w{fill:#efe9ff}.g{fill:#7dffb2}.c{fill:#36e2ff}.p{fill:#ff4fd8}
+    .crit{fill:#ff2e63;font-weight:700}.high{fill:#ff7a3d;font-weight:700}.low{fill:#36e2ff;font-weight:700}
+    .l{opacity:0;animation:show 14s infinite both}
+    @keyframes show{0%{opacity:0;transform:translateX(-8px)}3%{opacity:1;transform:none}90%{opacity:1}96%,100%{opacity:0}}
+    .cur{animation:blink 1s steps(2) infinite}
+    @keyframes blink{50%{opacity:0}}
+    .bar{transform-origin:0 0;animation:grow 14s infinite both}
+    @keyframes grow{0%,12%{transform:scaleX(0)}30%{transform:scaleX(1)}90%{transform:scaleX(1)}100%{transform:scaleX(1)}}
+  </style>
+  <rect width="960" height="470" rx="16" fill="#0d0719"/>
+  <rect width="960" height="40" rx="16" fill="#1a0f33"/><rect y="24" width="960" height="16" fill="#1a0f33"/>
+  <circle cx="26" cy="20" r="7" fill="#ff5f56"/><circle cx="50" cy="20" r="7" fill="#ffbd2e"/><circle cx="74" cy="20" r="7" fill="#27c93f"/>
+  <text x="400" y="25" class="d" style="font-size:13px">cipherbloom - my-bot-project</text>
+  <g transform="translate(26 74)">
+    <text class="l" style="animation-delay:0s"><tspan class="g">$ </tspan><tspan class="w">cipherbloom scan .</tspan><tspan class="cur w"> _</tspan></text>
+    <text y="30" class="l d" style="animation-delay:.8s">Checks: secrets, git hygiene, syntax, risky code, dependencies</text>
+    <rect y="44" width="500" height="6" rx="3" fill="#2a1b4d"/><rect class="bar" y="44" width="500" height="6" rx="3" fill="#ff4fd8" style="animation-delay:0s"/>
+    <text y="84" class="l" style="animation-delay:2s"><tspan class="crit"> CRITICAL </tspan><tspan class="w"> Telegram bot token found in code  </tspan><tspan class="c">bot.py:12</tspan></text>
+    <text y="106" class="l d" style="animation-delay:2.4s">     fix   : Open @BotFather, run /revoke, then load it from an env variable.</text>
+    <text y="146" class="l" style="animation-delay:3.4s"><tspan class="high"> HIGH </tspan><tspan class="w"> .env is not listed in .gitignore  </tspan><tspan class="c">.env</tspan></text>
+    <text y="168" class="l d" style="animation-delay:3.8s">     fix   : Add this line to .gitignore:  .env</text>
+    <text y="208" class="l" style="animation-delay:4.8s"><tspan class="high"> HIGH </tspan><tspan class="w"> subprocess with shell=True  </tspan><tspan class="c">app.py:48</tspan></text>
+    <text y="230" class="l d" style="animation-delay:5.2s">     fix   : Pass the command as a list and drop shell=True.</text>
+    <text y="270" class="l" style="animation-delay:6.2s"><tspan class="high"> HIGH </tspan><tspan class="w"> Syntax error: invalid syntax  </tspan><tspan class="c">utils/helpers.py:7</tspan></text>
+    <text y="292" class="l d" style="animation-delay:6.6s">     fix   : Open utils/helpers.py at line 7; check the line above it too.</text>
+    <text y="332" class="l" style="animation-delay:7.6s"><tspan class="low"> LOW </tspan><tspan class="w"> Dependency 'flask' is not pinned  </tspan><tspan class="c">requirements.txt:1</tspan></text>
+    <text y="372" class="l" style="animation-delay:8.6s"><tspan class="p">Summary: </tspan><tspan class="w">critical 1  high 3  low 1      </tspan><tspan class="g">Report saved: cipherbloom-report.html</tspan></text>
+  </g>
+</svg>

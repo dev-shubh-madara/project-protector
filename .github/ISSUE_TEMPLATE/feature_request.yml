@@ -1,0 +1,9 @@
+name: Feature or new rule
+description: Suggest a new check, provider pattern or improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should CipherBloom detect or do?
+    validations: { required: true }
