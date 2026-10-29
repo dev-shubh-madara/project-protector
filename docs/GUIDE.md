@@ -52,14 +52,14 @@ It runs six groups of checks:
 - **Beginner friendly.** Every finding includes a "why" and a "fix", so you learn while you fix.
 - **Private by design.** Nothing leaves your computer. No account, no telemetry, no upload.
 - **Zero setup.** Pure Python standard library: no `pip install` chain, no Docker, no config file.
-- **Works everywhere.** Windows, macOS, Linux, Termux; Python 3.9 or newer.
+- **Works everywhere.** Windows, macOS, Linux, Termux; Python 3.10 or newer.
 - **Fits your workflow.** Terminal, visual dashboard, git pre-commit hook and GitHub Actions.
 - **Ethical by default.** It can never be pointed at someone else's website.
 - **Shareable reports.** Secret values are masked, so you can send a report to a teammate safely.
 
 ## 3. Install
 
-You need **Python 3.9+**. Check with `python --version` (or `python3 --version`).
+You need **Python 3.10+**. Check with `python --version` (or `python3 --version`).
 
 **Option A: install the command (recommended)**
 
