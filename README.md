@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/dev-shubh-madara/project-protector/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/dev-shubh-madara/project-protector/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="Python" src="https://img.shields.io/badge/python-3.8%2B-8b5cff?logo=python&logoColor=white">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.9%2B-8b5cff?logo=python&logoColor=white">
   <img alt="Dependencies" src="https://img.shields.io/badge/dependencies-0-ff4fd8">
   <img alt="No AI" src="https://img.shields.io/badge/AI%20%2F%20API%20key-not%20needed-36e2ff">
   <img alt="Offline" src="https://img.shields.io/badge/runs-100%25%20offline-5dffa8">
@@ -42,7 +42,7 @@ Every week, developers push a bot token, an AWS key or a whole `.env` file to Gi
 ## 🚀 Quick start
 
 ```bash
-# 1. Install (Python 3.8+)
+# 1. Install (Python 3.9+)
 pip install git+https://github.com/dev-shubh-madara/project-protector
 
 # 2. Scan any project
